@@ -27,7 +27,6 @@ def restart_race():
     dxinput.PressKey(0x1C)
     time.sleep(0.2)
     dxinput.ReleaseKey(0x1C)
-    time.sleep(1.0)
 
 def take_action(result):
     for i in range(5):
@@ -71,20 +70,23 @@ def process_image(img):
     img[img<150]=0
     img[img>0]=255
     img[55-2:55+2,75-2:75+2]=100
+    img = img/255
     img=img[55-32:55+32,75-32:75+32]
     return img
 
 model = keras.models.load_model("cnnv2.h5")
-
 restart_race()
-clear_presses()
 while True:
-    img = ss.get_screen(screen_name)
+    try:
+        img = ss.get_screen(screen_name)
+    except:
+        clear_presses()
+        break
     speed = digits.get_speed(img)
     img = img[420:-70,80:230,2]
-    print(img.shape)
+    # print(img.shape)
     img = process_image(img)
     img = img.reshape(1,64,64,1)
     result = model.predict([img,speed])
-    print(result)
+    # print(result)
     take_action(result[0])
